@@ -1,0 +1,125 @@
+/* custom.css - Streamlit GUM Dashboard Custom Styles */
+
+/* 1. Global font family */
+body, .block-container {
+font-family: 'Gotham HTF', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* 2. Theme colors override */
+:root {
+--primary-color: #38D430;            /* colori dei titoli e dei grafici */
+--background-color: #FFFFFF;         /* background generale */
+--secondary-bg-color: #FFFFFF;       /* sidebar e widget */
+--text-color: #000000;               /* testo */
+}
+
+/* 3. Background colors */
+[data-testid="stAppViewContainer"] {
+background-color: var(--background-color);
+}
+[data-testid="stSidebar"] {
+background-color: var(--secondary-bg-color);
+}
+
+/* 4. Headers and highlights */
+h1, .streamlit-expanderHeader {
+color: var(--primary-color);
+}
+h1 {
+text-align: center;
+}
+h2 {
+color: var(--text-color);
+padding: 2px;
+border-radius: 4px;
+/*text-decoration: underline #38D430;*/
+}
+
+hr {
+    border: 1.2px solid #38D430 !important;
+    margin: 1px !important;
+}
+
+[role=tablist] {
+    /* center the tabs */
+    display: flex;
+    justify-content: center;
+    margin: 0 auto;
+    /* increase the space between tabs */
+    gap: 2rem;
+    /* add a border around the tabs */
+    border: 1px solid #38D430;
+    /*increase font size*/
+    font-size: 1.8rem !important;
+
+}
+[role=tab] {
+    /* increase the space between tabs */
+    margin: 0 auto;
+    /*increase font size*/
+    font-size:3rem !important;
+}
+
+.logo-sidebar {
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+    padding: 0px 0px 0px 0px;
+    border-radius: 4px;
+    background-color: var(--secondary-bg-color);
+}
+
+/* Sidebar stretta ma adattabile */
+section[data-testid="stSidebar"] {
+    max-width: 150px !important;
+    overflow-x: hidden;
+}
+
+/* Rimuove la maniglia di ridimensionamento */
+div[data-testid="stSidebarResizer"] {
+    display: none !important;
+}
+
+
+/* 5. Metrics containers */
+.stMetric {
+background-color: #F9F9F9;
+border: 1px solid #E0E0E0;
+border-radius: 6px;
+padding: 16px;
+color: var(--text-color);
+}
+
+/* 6. Tables */
+.stDataFrame > div {
+border: 1px solid #E0E0E0;
+}
+
+/* 7. Charts: override Altair theme via CSS */
+.vega-embed {
+background-color: transparent !important;
+}
+
+/* 8. Footer styling */
+.footer {
+text-align: center;
+padding: 8px;
+font-size: 0.9rem;
+color: var(--primary-color);
+}
+.footer img {
+margin-top: 4px;
+width: 50px;
+}
+
+/* 9. Sidebar widgets */
+.stSidebar .stButton>button, .stSidebar .stSlider>div {
+background-color: var(--secondary-bg-color);
+}
+
+
+.stMainBlockContainer {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+}

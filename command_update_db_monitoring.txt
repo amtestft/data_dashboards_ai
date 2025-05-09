@@ -1,0 +1,1 @@
+python update_db_sheets.py --gsheet-id 1Pak2IBULwI7lVZ-hPbz0Yv51FfjP3xHiCpk6KjKphTY --dsn "postgresql://postgres:Briciola%401@localhost:5432/monitoring" --creds fortop-ga4-data-1351a96cc150.json
