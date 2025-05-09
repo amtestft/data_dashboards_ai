@@ -5,13 +5,17 @@ import pandas as pd
 import altair as alt
 from sqlalchemy import create_engine
 
-def get_connection():
+@st.cache_resource
+def get_engine():
     creds = st.secrets["postgres"]
     dsn = (
         f"postgresql://{creds['user']}:{creds['password']}"
         f"@{creds['host']}:{creds['port']}/{creds['database']}"
     )
     return create_engine(dsn)
+
+def get_connection():
+    return get_engine().connect()
 
 @st.cache_data
 def load_gum_data() -> pd.DataFrame:
