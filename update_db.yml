@@ -1,0 +1,35 @@
+name: Aggiorna Supabase DB
+
+on:
+  schedule:
+    - cron: '0 5 * * *'  # ogni giorno alle 5:00 UTC (7:00 italiane)
+  workflow_dispatch:
+
+jobs:
+  update-db:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Authenticate Google Sheets
+      run: |
+        echo "$GOOGLE_CREDS_JSON" > fortop-ga4-data-1351a96cc150.json
+      env:
+        GOOGLE_CREDS_JSON: ${{ secrets.GOOGLE_CREDS_JSON }}
+
+    - name: Run update script
+      run: |
+        CMD=$(cat command_update_db_monitoring.txt)
+        eval "$CMD"
+      env:
+        DB_DSN: ${{ secrets.DB_DSN }}
