@@ -21,7 +21,7 @@ def check_password():
         if st.button("Entra"):
             if password == PASSWORD:
                 st.session_state.authenticated = True
-                st.experimental_rerun()
+                st.rerun()  # ✅ nuovo metodo corretto
             else:
                 st.error("❌ Password errata")
         st.stop()
