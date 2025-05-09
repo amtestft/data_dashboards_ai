@@ -7,6 +7,28 @@ from chiesi_sessions import load_sessions_data, render_sessions_dashboard
 import google.generativeai as genai
 from streamlit_chat import message
 
+# Imposta la password corretta (puoi anche leggerla da st.secrets)
+PASSWORD = st.secrets.get("app_password", "nan")
+
+def check_password():
+    """Chiede la password e blocca l'accesso se errata."""
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+
+    if not st.session_state.authenticated:
+        st.title("🔒 Accesso riservato")
+        password = st.text_input("Inserisci la password:", type="password")
+        if st.button("Entra"):
+            if password == PASSWORD:
+                st.session_state.authenticated = True
+                st.experimental_rerun()
+            else:
+                st.error("❌ Password errata")
+        st.stop()
+
+# Chiamalo all'inizio della tua app
+check_password()
+
 def get_available_gemini_models(api_key):
     try:
         genai.configure(api_key=api_key)
