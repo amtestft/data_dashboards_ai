@@ -6,7 +6,11 @@ import altair as alt
 from sqlalchemy import create_engine
 
 def get_connection():
-    dsn = st.secrets.connections.get("dsn") or os.getenv("DATABASE_URL")
+    creds = st.secrets["postgres"]
+    dsn = (
+        f"postgresql://{creds['user']}:{creds['password']}"
+        f"@{creds['host']}:{creds['port']}/{creds['database']}"
+    )
     return create_engine(dsn)
 
 @st.cache_data
