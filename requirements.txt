@@ -1,4 +1,6 @@
-streamlit
-pandas
-psycopg2-binary
-sqlalchemy
+streamlit>=1.30.0
+pandas>=2.0.0
+sqlalchemy>=1.4
+psycopg2-binary>=2.9
+google-generativeai>=0.3.2
+streamlit-chat>=0.0.2
