@@ -12,13 +12,17 @@ import plotly.graph_objects as go
 
 
 # ───────────────────── DB
-def get_connection():
+@st.cache_resource
+def get_engine():
     creds = st.secrets["postgres"]
     dsn = (
         f"postgresql://{creds['user']}:{creds['password']}"
         f"@{creds['host']}:{creds['port']}/{creds['database']}"
     )
     return create_engine(dsn)
+
+def get_connection():
+    return get_engine().connect()
 
 
 @st.cache_data(show_spinner=True)
