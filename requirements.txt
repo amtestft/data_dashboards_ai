@@ -6,3 +6,4 @@ google-generativeai>=0.3.2
 streamlit-chat>=0.0.2
 plotly
 tabulate
+markdown
