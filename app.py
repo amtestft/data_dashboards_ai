@@ -142,6 +142,7 @@ with st.expander("💬 Chat con AI", expanded=True):
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
+    # Lista modelli
     model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
 
     if model_list and not model_list[0].startswith("Errore"):
@@ -150,41 +151,42 @@ with st.expander("💬 Chat con AI", expanded=True):
         st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
         selected_model = None
 
-    # ✅ Input testuale senza trigger automatico
+    # Campo input controllato
     user_input = st.text_input("Fai una domanda sui dati...", key="user_ask")
 
-    # ✅ Bottone che controlla l'invio
+    # Bottone Invia
     send_button = st.button("Invia")
 
-    # ✅ Solo quando premo il bottone e ho selezionato il modello e c'è input
-    if send_button and user_input and selected_model:
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
+    if send_button and st.session_state.user_ask and selected_model:
+        # Uso temporaneo del contenuto
+        input_to_process = st.session_state.user_ask
+
+        st.session_state.chat_history.append({"role": "user", "content": input_to_process})
 
         with st.spinner("Gemini sta analizzando..."):
-            contextual_prompt = build_contextual_prompt(user_input, df)
+            contextual_prompt = build_contextual_prompt(input_to_process, df)
             bot_response = gemini_response(contextual_prompt, model_name=selected_model)
 
         st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
-        # ✅ Resetta il campo input dopo invio (opzionale)
+        # ✅ Reset corretto PRIMA che venga re-creato il widget (il rerun farà il resto)
         st.session_state.user_ask = ""
 
-    # Stile del contenitore
+    # Visualizza la chat
     st.markdown("""
-            <style>
-                .chat-markdown {
-                    height: 400px;
-                    overflow-y: auto;
-                    border: 1px solid #ccc;
-                    padding: 10px;
-                    background-color: #f9f9f9;
-                    border-radius: 8px;
-                    margin-top: 20px;
-                }
-            </style>
-        """, unsafe_allow_html=True)
+        <style>
+            .chat-markdown {
+                height: 400px;
+                overflow-y: auto;
+                border: 1px solid #ccc;
+                padding: 10px;
+                background-color: #f9f9f9;
+                border-radius: 8px;
+                margin-top: 20px;
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
-    # Compila tutta la chat come markdown puro
     chat_md = ""
     if len(st.session_state.chat_history) == 0:
         chat_md += "**La chat è vuota. Fai una domanda per iniziare.**\n"
@@ -195,8 +197,6 @@ with st.expander("💬 Chat con AI", expanded=True):
             else:
                 chat_md += f"**Gemini:**\n\n{chat['content']}\n\n"
 
-    # ✅ Converti Markdown in HTML sicuro
     chat_html_converted = markdown.markdown(chat_md)
-
-    # ✅ Inserisci solo HTML convertito in un div scrollabile
     st.markdown(f'<div class="chat-markdown">{chat_html_converted}</div>', unsafe_allow_html=True)
+
