@@ -136,6 +136,9 @@ def build_contextual_prompt(user_input, df):
         f"Domanda dell'utente: {user_input}"
     )
     return prompt
+
+import html  # Per escape sicuro
+
 with st.expander("💬 Chat con AI", expanded=False):
     st.markdown("""
         <style>
@@ -154,6 +157,7 @@ with st.expander("💬 Chat con AI", expanded=False):
                 padding: 8px;
                 border-radius: 8px;
                 margin-bottom: 10px;
+                white-space: pre-wrap;
             }
             .bot-message {
                 text-align: left;
@@ -162,6 +166,7 @@ with st.expander("💬 Chat con AI", expanded=False):
                 padding: 8px;
                 border-radius: 8px;
                 margin-bottom: 10px;
+                white-space: pre-wrap;
             }
         </style>
     """, unsafe_allow_html=True)
@@ -190,13 +195,20 @@ with st.expander("💬 Chat con AI", expanded=False):
 
     # CREA LA CHAT CON HTML PERSONALIZZATO SENZA IFRAME
     chat_html = '<div class="chat-container">'
-    for chat in st.session_state.chat_history:
-        if chat["role"] == "user":
-            chat_html += f'<div class="user-message">{chat["content"]}</div>'
-        else:
-            chat_html += f'<div class="bot-message">{chat["content"]}</div>'
+
+    if len(st.session_state.chat_history) == 0:
+        chat_html += '<div class="bot-message">La chat è vuota. Fai una domanda per iniziare.</div>'
+    else:
+        for chat in st.session_state.chat_history:
+            safe_content = html.escape(chat["content"]).replace("\n", "<br>")
+            if chat["role"] == "user":
+                chat_html += f'<div class="user-message">{safe_content}</div>'
+            else:
+                chat_html += f'<div class="bot-message">{safe_content}</div>'
+
     chat_html += '</div>'
 
     st.markdown(chat_html, unsafe_allow_html=True)
+
 
 
