@@ -63,16 +63,16 @@ primary_color = "#38D430"
 
 # Sidebar: selezione del brand
 brands = {
-    "GUM": {
-        "loader": load_gum_data,
-        "renderer": render_gum_dashboard,
-        "logo": "imgs/gum_logo.png"
-    },
-    "TTT": {
-        "loader": load_ttt_data,
-        "renderer": render_ttt_dashboard,
-        "logo": "imgs/ttt_logo.png"
-    },
+    #"GUM": {
+    #    "loader": load_gum_data,
+   #     "renderer": render_gum_dashboard,
+    #    "logo": "imgs/gum_logo.png"
+    #},
+    #"TTT": {
+   #     "loader": load_ttt_data,
+   #     "renderer": render_ttt_dashboard,
+   #     "logo": "imgs/ttt_logo.png"
+   # },
     "Chiesi [Budget]": {
         "loader": load_budget_data,
         "renderer": render_budget_dashboard,
