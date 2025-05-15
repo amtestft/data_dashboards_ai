@@ -123,3 +123,9 @@ background-color: var(--secondary-bg-color);
     padding-left: 20px !important;
     padding-right: 20px !important;
 }
+
+.stCustomComponentV1 iframe {
+    height: 400px !important;
+    max-height: 400px !important;
+    overflow-y: auto !important;
+}
