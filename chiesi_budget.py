@@ -70,17 +70,26 @@ def single_channel_view(df: pd.DataFrame, brand: str, channel: str, color: str) 
     week_order = df["week_label"].tolist()
 
     st.subheader("Δ € per Week")
-    st.altair_chart(
-        alt.Chart(df)
-        .mark_line(strokeWidth=4, color=color)
-        .encode(
-            x=alt.X("week_label:N", sort=week_order, title="Week"),
-            y=alt.Y(f"{col_name}:Q", title="Δ €"),
-            tooltip=["week_label", alt.Tooltip(col_name, format="+.2f")],
-        )
-        .properties(height=320),
-        use_container_width=True,
+    # Linea dati principali
+    line_chart = alt.Chart(df).mark_line(strokeWidth=4, color=color).encode(
+        x=alt.X("week_label:N", sort=week_order, title="Week"),
+        y=alt.Y(f"{col_name}:Q", title="Δ €"),
+        tooltip=["week_label", alt.Tooltip(col_name, format="+.2f")],
     )
+    
+    # Linea orizzontale y=0 tratteggiata nera
+    zero_line = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(
+        color='black',
+        strokeDash=[5, 5],
+        strokeWidth=1
+    ).encode(
+        y='y:Q'
+    )
+    
+    # Combinazione grafici
+    final_chart = (line_chart + zero_line).properties(height=320)
+    
+    st.altair_chart(final_chart, use_container_width=True)
 
     # data table
     tbl = df[["week_label", col_name]]
