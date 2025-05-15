@@ -137,12 +137,15 @@ def build_contextual_prompt(user_input, df):
     )
     return prompt
 
+def reset_input():
+    st.session_state.user_input_buffer = ""  # Sicuro perché eseguito al click e non nel flusso principale
+
 with st.expander("💬 Chat con AI", expanded=True):
 
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # Gestione modello
+    # Lista modelli
     model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
 
     if model_list and not model_list[0].startswith("Errore"):
@@ -151,29 +154,18 @@ with st.expander("💬 Chat con AI", expanded=True):
         st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
         selected_model = None
 
-    # Uso di un buffer dedicato per l'input utente
-    if "user_input_buffer" not in st.session_state:
-        st.session_state.user_input_buffer = ""
-
-    # Input normale nel text_input collegato al buffer
+    # Input controllato
     user_input = st.text_input("Fai una domanda sui dati...", key="user_input_buffer")
 
-    # Bottone per invio
-    send_button = st.button("Invia")
-
-    if send_button and st.session_state.user_input_buffer and selected_model:
-        input_to_process = st.session_state.user_input_buffer
-
-        st.session_state.chat_history.append({"role": "user", "content": input_to_process})
+    # Bottone Invia con on_click che resetta dopo l'elaborazione
+    if st.button("Invia", on_click=reset_input) and user_input and selected_model:
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
 
         with st.spinner("Gemini sta analizzando..."):
-            contextual_prompt = build_contextual_prompt(input_to_process, df)
+            contextual_prompt = build_contextual_prompt(user_input, df)
             bot_response = gemini_response(contextual_prompt, model_name=selected_model)
 
         st.session_state.chat_history.append({"role": "bot", "content": bot_response})
-
-        # ✅ Reset sicuro del buffer (non del key del widget direttamente)
-        st.session_state.user_input_buffer = ""
 
     # Visualizza la chat
     st.markdown("""
@@ -202,3 +194,4 @@ with st.expander("💬 Chat con AI", expanded=True):
 
     chat_html_converted = markdown.markdown(chat_md)
     st.markdown(f'<div class="chat-markdown">{chat_html_converted}</div>', unsafe_allow_html=True)
+
