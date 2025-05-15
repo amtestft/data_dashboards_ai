@@ -133,7 +133,7 @@ def brand_view(df: pd.DataFrame, brand: str, color: str) -> None:
         line_chart_ytd = alt.Chart(df).mark_line(strokeWidth=4, color=color).encode(
             x=alt.X("week_label:N", sort=week_order),
             y=alt.Y(f"{ytd_col}:Q", title="YTD Δ"),
-            tooltip=["Week", ytd_col],
+            tooltip=["week_label", ytd_col],
         )
         
         # Linea orizzontale y=0 tratteggiata nera
