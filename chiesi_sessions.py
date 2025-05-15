@@ -131,12 +131,11 @@ def brand_view(df: pd.DataFrame, brand: str, color: str) -> None:
         st.subheader("YTD Δ Trend")
         # Linea dati principali (YTD Δ)
         line_chart_ytd = alt.Chart(df).mark_line(strokeWidth=4, color=color).encode(
-            x=alt.X("week_label:N", sort=week_order, title="Week",
-                    axis=alt.Axis(labelExpr="replace(datum.value, 'Week ', '')")),
+            x=alt.X("week_label:N", sort=week_order),
             y=alt.Y(f"{ytd_col}:Q", title="YTD Δ"),
             tooltip=["Week", ytd_col],
         )
-
+        
         # Linea orizzontale y=0 tratteggiata nera
         zero_line_ytd = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(
             color='black',
@@ -157,28 +156,13 @@ def brand_view(df: pd.DataFrame, brand: str, color: str) -> None:
             alt.Chart(df)
             .mark_line(strokeWidth=4, color=color)
             .encode(
-                x=alt.X("week_label:N", sort=week_order, title="Week",
-                        axis=alt.Axis(labelExpr="replace(datum.value, 'Week ', '')")),
+                x=alt.X("week_label:N", sort=week_order),
                 y=alt.Y(contr_col + ":Q", title="Contribution", axis=alt.Axis(format="%")),
                 tooltip=["week_label", alt.Tooltip(contr_col, format=".2%")],
             )
             .properties(height=340),
             use_container_width=True,
         )
-
-
-    st.markdown("##### Data Table")
-    st.dataframe(
-        df[["week_label", ytd_col, contr_col]].rename(
-            columns={
-                "week_label": "Week",
-                ytd_col: "YTD Δ",
-                contr_col: "Contribution",
-            }
-        ),
-        use_container_width=True,
-    )
-
 
 # ───────────────────── main renderer
 def render_sessions_dashboard(df: pd.DataFrame,
