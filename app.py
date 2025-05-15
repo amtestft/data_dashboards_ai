@@ -150,9 +150,14 @@ with st.expander("💬 Chat con AI", expanded=True):
         st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
         selected_model = None
 
+    # ✅ Input testuale senza trigger automatico
     user_input = st.text_input("Fai una domanda sui dati...", key="user_ask")
 
-    if user_input and selected_model:
+    # ✅ Bottone che controlla l'invio
+    send_button = st.button("Invia")
+
+    # ✅ Solo quando premo il bottone e ho selezionato il modello e c'è input
+    if send_button and user_input and selected_model:
         st.session_state.chat_history.append({"role": "user", "content": user_input})
 
         with st.spinner("Gemini sta analizzando..."):
@@ -160,6 +165,9 @@ with st.expander("💬 Chat con AI", expanded=True):
             bot_response = gemini_response(contextual_prompt, model_name=selected_model)
 
         st.session_state.chat_history.append({"role": "bot", "content": bot_response})
+
+        # ✅ Resetta il campo input dopo invio (opzionale)
+        st.session_state.user_ask = ""
 
     # Stile del contenitore
     st.markdown("""
