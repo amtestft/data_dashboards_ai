@@ -6,9 +6,10 @@ from chiesi_budget import load_budget_data, render_budget_dashboard
 from chiesi_sessions import load_sessions_data, render_sessions_dashboard
 import google.generativeai as genai
 from streamlit_chat import message
+import html
 
 # Imposta la password corretta (puoi anche leggerla da st.secrets)
-PASSWORD = st.secrets.get("app_password", "nan")
+PASSWORD = st.secrets.get("app_password", "testftam")
 
 def check_password():
     """Chiede la password e blocca l'accesso se errata."""
@@ -137,9 +138,34 @@ def build_contextual_prompt(user_input, df):
     )
     return prompt
 
-import html  # Per escape sicuro
+with st.expander("💬 Chat con AI", expanded=True):
 
-with st.expander("💬 Chat con AI", expanded=False):
+    # Prima la selezione del modello
+    model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
+
+    if model_list and not model_list[0].startswith("Errore"):
+        selected_model = st.selectbox("Seleziona il modello Gemini", model_list, index=0)
+    else:
+        st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
+        selected_model = None
+
+    # Poi il campo input
+    user_input = st.text_input("Fai una domanda sui dati...", key="user_ask")
+
+    # Processa input e aggiorna la chat history
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+
+    if user_input and selected_model:
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+
+        with st.spinner("Gemini sta analizzando..."):
+            contextual_prompt = build_contextual_prompt(user_input, df)
+            bot_response = gemini_response(contextual_prompt, model_name=selected_model)
+
+        st.session_state.chat_history.append({"role": "bot", "content": bot_response})
+
+    # Poi mostri la chat in basso
     st.markdown("""
         <style>
             .chat-container {
@@ -149,6 +175,7 @@ with st.expander("💬 Chat con AI", expanded=False):
                 padding: 10px;
                 background-color: #f9f9f9;
                 border-radius: 8px;
+                margin-top: 20px;
             }
             .user-message {
                 text-align: right;
@@ -171,31 +198,8 @@ with st.expander("💬 Chat con AI", expanded=False):
         </style>
     """, unsafe_allow_html=True)
 
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-
-    model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
-
-    if model_list and not model_list[0].startswith("Errore"):
-        selected_model = st.selectbox("Seleziona il modello Gemini", model_list, index=0)
-    else:
-        st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
-        selected_model = None
-
-    user_input = st.text_input("Fai una domanda sui dati...", key="user_ask")
-
-    if user_input and selected_model:
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
-
-        with st.spinner("Gemini sta analizzando..."):
-            contextual_prompt = build_contextual_prompt(user_input, df)
-            bot_response = gemini_response(contextual_prompt, model_name=selected_model)
-
-        st.session_state.chat_history.append({"role": "bot", "content": bot_response})
-
-    # CREA LA CHAT CON HTML PERSONALIZZATO SENZA IFRAME
+    # Render chat
     chat_html = '<div class="chat-container">'
-
     if len(st.session_state.chat_history) == 0:
         chat_html += '<div class="bot-message">La chat è vuota. Fai una domanda per iniziare.</div>'
     else:
@@ -205,10 +209,8 @@ with st.expander("💬 Chat con AI", expanded=False):
                 chat_html += f'<div class="user-message">{safe_content}</div>'
             else:
                 chat_html += f'<div class="bot-message">{safe_content}</div>'
-
     chat_html += '</div>'
 
     st.markdown(chat_html, unsafe_allow_html=True)
-
 
 
