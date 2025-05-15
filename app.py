@@ -138,79 +138,59 @@ def build_contextual_prompt(user_input, df):
     )
     return prompt
 
-with st.expander("💬 Chat con AI", expanded=True):
+with col2:
+    with st.expander("💬 Chat con AI", expanded=True):
 
-    # Prima la selezione del modello
-    model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
 
-    if model_list and not model_list[0].startswith("Errore"):
-        selected_model = st.selectbox("Seleziona il modello Gemini", model_list, index=0)
-    else:
-        st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
-        selected_model = None
+        # UI sempre in alto dentro col2
+        model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
 
-    # Poi il campo input
-    user_input = st.text_input("Fai una domanda sui dati...", key="user_ask")
+        if model_list and not model_list[0].startswith("Errore"):
+            selected_model = st.selectbox("Seleziona il modello Gemini", model_list, index=0)
+        else:
+            st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
+            selected_model = None
 
-    # Processa input e aggiorna la chat history
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
+        user_input = st.text_input("Fai una domanda sui dati...", key="user_ask")
 
-    if user_input and selected_model:
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        if user_input and selected_model:
+            st.session_state.chat_history.append({"role": "user", "content": user_input})
 
-        with st.spinner("Gemini sta analizzando..."):
-            contextual_prompt = build_contextual_prompt(user_input, df)
-            bot_response = gemini_response(contextual_prompt, model_name=selected_model)
+            with st.spinner("Gemini sta analizzando..."):
+                contextual_prompt = build_contextual_prompt(user_input, df)
+                bot_response = gemini_response(contextual_prompt, model_name=selected_model)
 
-        st.session_state.chat_history.append({"role": "bot", "content": bot_response})
+            st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
-    # Poi mostri la chat in basso
-    st.markdown("""
-        <style>
-            .chat-container {
-                height: 400px;
-                overflow-y: auto;
-                border: 1px solid #ccc;
-                padding: 10px;
-                background-color: #f9f9f9;
-                border-radius: 8px;
-                margin-top: 20px;
-            }
-            .user-message {
-                text-align: right;
-                color: #000;
-                background-color: #e1ffc7;
-                padding: 8px;
-                border-radius: 8px;
-                margin-bottom: 10px;
-                white-space: pre-wrap;
-            }
-            .bot-message {
-                text-align: left;
-                color: #000;
-                background-color: #f0f0f0;
-                padding: 8px;
-                border-radius: 8px;
-                margin-bottom: 10px;
-                white-space: pre-wrap;
-            }
-        </style>
-    """, unsafe_allow_html=True)
+        # Stile container con scroll solo per la parte markdown
+        st.markdown("""
+            <style>
+                .chat-markdown {
+                    height: 400px;
+                    overflow-y: auto;
+                    border: 1px solid #ccc;
+                    padding: 10px;
+                    background-color: #f9f9f9;
+                    border-radius: 8px;
+                    margin-top: 20px;
+                }
+            </style>
+        """, unsafe_allow_html=True)
 
-    # Render chat
-    chat_html = '<div class="chat-container">'
-    if len(st.session_state.chat_history) == 0:
-        chat_html += '<div class="bot-message">La chat è vuota. Fai una domanda per iniziare.</div>'
-    else:
-        for chat in st.session_state.chat_history:
-            safe_content = html.escape(chat["content"]).replace("\n", "<br>")
-            if chat["role"] == "user":
-                chat_html += f'<div class="user-message">{safe_content}</div>'
-            else:
-                chat_html += f'<div class="bot-message">{safe_content}</div>'
-    chat_html += '</div>'
+        # Costruzione della chat come markdown puro
+        chat_md = ""
+        if len(st.session_state.chat_history) == 0:
+            chat_md += "**La chat è vuota. Fai una domanda per iniziare.**\n"
+        else:
+            for chat in st.session_state.chat_history:
+                if chat["role"] == "user":
+                    chat_md += f"**Tu:**\n\n{chat['content']}\n\n"
+                else:
+                    chat_md += f"**Gemini:**\n\n{chat['content']}\n\n"
 
-    st.markdown(chat_html, unsafe_allow_html=True)
+        # Wrappare tutto in div con classe personalizzata che gestisce lo scroll
+        st.markdown(f'<div class="chat-markdown">{st.markdown(chat_md)}</div>', unsafe_allow_html=True)
 
 
