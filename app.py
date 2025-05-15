@@ -139,15 +139,8 @@ def build_contextual_prompt(user_input, df):
 
 import markdown
 
-# Inizializzazione session state sicura
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
-if "user_input_buffer" not in st.session_state:
-    st.session_state.user_input_buffer = ""
-
-if "send_message" not in st.session_state:
-    st.session_state.send_message = False
 
 with st.expander("💬 Chat con AI", expanded=True):
 
@@ -159,30 +152,22 @@ with st.expander("💬 Chat con AI", expanded=True):
         st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
         selected_model = None
 
-    # Input normale gestito da session_state
-    st.text_input("Fai una domanda sui dati...", key="user_input_buffer")
+    # ✅ Input "stateless", senza key in session_state
+    message_to_send = st.text_input("Fai una domanda sui dati...")
 
-    # Bottone che setta un flag
-    if st.button("Invia"):
-        st.session_state.send_message = True
-
-    # Solo se cliccato il bottone e c'è input e modello valido
-    if st.session_state.send_message and st.session_state.user_input_buffer and selected_model:
-        input_to_process = st.session_state.user_input_buffer
-
-        st.session_state.chat_history.append({"role": "user", "content": input_to_process})
+    # ✅ Bottone che processa direttamente la variabile sopra
+    if st.button("Invia") and message_to_send and selected_model:
+        st.session_state.chat_history.append({"role": "user", "content": message_to_send})
 
         with st.spinner("Gemini sta analizzando..."):
-            contextual_prompt = build_contextual_prompt(input_to_process, df)
+            contextual_prompt = build_contextual_prompt(message_to_send, df)
             bot_response = gemini_response(contextual_prompt, model_name=selected_model)
 
         st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
-        # Resetta il buffer in modo sicuro nel flusso corretto al prossimo rerun
-        st.session_state.user_input_buffer = ""
-        st.session_state.send_message = False
+        # ✅ Nessun reset forzato del campo (Streamlit rerunnerà la pagina e svuoterà l'input automaticamente)
 
-    # Visualizzazione chat
+    # Visualizza la chat
     st.markdown("""
         <style>
             .chat-markdown {
