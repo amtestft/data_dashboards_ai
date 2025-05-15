@@ -131,7 +131,7 @@ def brand_view(df: pd.DataFrame, brand: str, color: str) -> None:
         st.subheader("YTD Δ Trend")
         # Linea dati principali (YTD Δ)
         line_chart_ytd = alt.Chart(df).mark_line(strokeWidth=4, color=color).encode(
-            x=alt.X("week_label:N", sort=week_order),
+            x=alt.X(":N", sort=week_order),
             y=alt.Y(f"{ytd_col}:Q", title="YTD Δ"),
             tooltip=["week_label", ytd_col],
         )
