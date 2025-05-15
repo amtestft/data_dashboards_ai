@@ -140,37 +140,45 @@ with col2:
     with st.expander("💬 Chat con AI", expanded=False):
         st.markdown("""
             <style>
-                /* Forza altezza fissa all'iframe generato da streamlit_chat */
-                .stCustomComponentV1 iframe {
-                    height: 400px !important;
-                    max-height: 400px !important;
-                    overflow-y: auto !important;
+                .chat-container {
+                    height: 400px;
+                    max-height: 400px;
+                    overflow-y: auto;
+                    border: 1px solid #ccc;
+                    padding: 10px;
+                    background-color: #f9f9f9;
+                    border-radius: 8px;
                 }
             </style>
         """, unsafe_allow_html=True)
-    
+
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
-    
+
         model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
-    
+
         if model_list and not model_list[0].startswith("Errore"):
             selected_model = st.selectbox("Seleziona il modello Gemini", model_list, index=0)
         else:
             st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
             selected_model = None
-    
+
         user_input = st.text_input("Fai una domanda sui dati...", key="user_ask")
-    
+
         if user_input and selected_model:
             st.session_state.chat_history.append({"role": "user", "content": user_input})
-    
+
             with st.spinner("Gemini sta analizzando..."):
                 contextual_prompt = build_contextual_prompt(user_input, df)
                 bot_response = gemini_response(contextual_prompt, model_name=selected_model)
-    
+
             st.session_state.chat_history.append({"role": "bot", "content": bot_response})
-    
-        for i, chat in enumerate(st.session_state.chat_history):
-            message(chat["content"], is_user=(chat["role"] == "user"), key=f"chat_{i}")
+
+        # CREA UN CONTENITORE CON CLASSE PERSONALIZZATA
+        chat_placeholder = st.empty()
+        with chat_placeholder:
+            st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+            for i, chat in enumerate(st.session_state.chat_history):
+                message(chat["content"], is_user=(chat["role"] == "user"), key=f"chat_{i}")
+            st.markdown('</div>', unsafe_allow_html=True)
 
