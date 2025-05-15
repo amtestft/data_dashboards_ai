@@ -137,37 +137,52 @@ def build_contextual_prompt(user_input, df):
     )
     return prompt
 
-def reset_input():
-    st.session_state.user_input_buffer = ""  # Sicuro perché eseguito al click e non nel flusso principale
+import markdown
+
+# Inizializzazione session state sicura
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+if "user_input_buffer" not in st.session_state:
+    st.session_state.user_input_buffer = ""
+
+if "send_message" not in st.session_state:
+    st.session_state.send_message = False
 
 with st.expander("💬 Chat con AI", expanded=True):
 
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-
-    # Lista modelli
+    # Modello
     model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
-
     if model_list and not model_list[0].startswith("Errore"):
         selected_model = st.selectbox("Seleziona il modello Gemini", model_list, index=0)
     else:
         st.error("❌ Impossibile caricare i modelli Gemini. Controlla la tua API Key.")
         selected_model = None
 
-    # Input controllato
-    user_input = st.text_input("Fai una domanda sui dati...", key="user_input_buffer")
+    # Input normale gestito da session_state
+    st.text_input("Fai una domanda sui dati...", key="user_input_buffer")
 
-    # Bottone Invia con on_click che resetta dopo l'elaborazione
-    if st.button("Invia", on_click=reset_input) and user_input and selected_model:
-        st.session_state.chat_history.append({"role": "user", "content": user_input})
+    # Bottone che setta un flag
+    if st.button("Invia"):
+        st.session_state.send_message = True
+
+    # Solo se cliccato il bottone e c'è input e modello valido
+    if st.session_state.send_message and st.session_state.user_input_buffer and selected_model:
+        input_to_process = st.session_state.user_input_buffer
+
+        st.session_state.chat_history.append({"role": "user", "content": input_to_process})
 
         with st.spinner("Gemini sta analizzando..."):
-            contextual_prompt = build_contextual_prompt(user_input, df)
+            contextual_prompt = build_contextual_prompt(input_to_process, df)
             bot_response = gemini_response(contextual_prompt, model_name=selected_model)
 
         st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
-    # Visualizza la chat
+        # Resetta il buffer in modo sicuro nel flusso corretto al prossimo rerun
+        st.session_state.user_input_buffer = ""
+        st.session_state.send_message = False
+
+    # Visualizzazione chat
     st.markdown("""
         <style>
             .chat-markdown {
@@ -194,4 +209,5 @@ with st.expander("💬 Chat con AI", expanded=True):
 
     chat_html_converted = markdown.markdown(chat_md)
     st.markdown(f'<div class="chat-markdown">{chat_html_converted}</div>', unsafe_allow_html=True)
+
 
