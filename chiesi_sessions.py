@@ -129,17 +129,26 @@ def brand_view(df: pd.DataFrame, brand: str, color: str) -> None:
     c1_, c2_ = st.columns(2)
     with c1_:
         st.subheader("YTD Δ Trend")
-        st.altair_chart(
-            alt.Chart(df)
-            .mark_line(strokeWidth=4, color=color)
-            .encode(
-                x=alt.X("week_label:N", sort=week_order),
-                y=alt.Y(ytd_col + ":Q", title="YTD Δ"),
-                tooltip=["week_label", ytd_col],
-            )
-            .properties(height=340),
-            use_container_width=True,
+        # Linea dati principali (YTD Δ)
+        line_chart_ytd = alt.Chart(df).mark_line(strokeWidth=4, color=color).encode(
+            x=alt.X("week_label:N", sort=week_order),
+            y=alt.Y(f"{ytd_col}:Q", title="YTD Δ"),
+            tooltip=["week_label", ytd_col],
         )
+        
+        # Linea orizzontale y=0 tratteggiata nera
+        zero_line_ytd = alt.Chart(pd.DataFrame({'y': [0]})).mark_rule(
+            color='black',
+            strokeDash=[5, 5],
+            strokeWidth=1
+        ).encode(
+            y='y:Q'
+        )
+        
+        # Combinazione grafici
+        final_chart_ytd = (line_chart_ytd + zero_line_ytd).properties(height=340)
+        
+        st.altair_chart(final_chart_ytd, use_container_width=True)
 
     with c2_:
         st.subheader("Paid Contribution %")
