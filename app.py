@@ -7,6 +7,7 @@ from chiesi_sessions import load_sessions_data, render_sessions_dashboard
 import google.generativeai as genai
 from streamlit_chat import message
 import html
+import markdown
 
 # Imposta la password corretta (puoi anche leggerla da st.secrets)
 PASSWORD = st.secrets.get("app_password", "testftam")
@@ -141,7 +142,6 @@ with st.expander("💬 Chat con AI", expanded=True):
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # UI sempre in alto dentro col2
     model_list = get_available_gemini_models(st.secrets["google"]["api_key"])
 
     if model_list and not model_list[0].startswith("Errore"):
@@ -161,9 +161,10 @@ with st.expander("💬 Chat con AI", expanded=True):
 
         st.session_state.chat_history.append({"role": "bot", "content": bot_response})
 
-    # Stile container con scroll solo per la parte markdown
-    st.markdown("""            <style>
-            .chat-markdown {
+    # Stile del contenitore
+    st.markdown("""
+            <style>
+                .chat-markdown {
                     height: 400px;
                     overflow-y: auto;
                     border: 1px solid #ccc;
@@ -175,7 +176,7 @@ with st.expander("💬 Chat con AI", expanded=True):
             </style>
         """, unsafe_allow_html=True)
 
-    # Costruzione della chat come markdown puro
+    # Compila tutta la chat come markdown puro
     chat_md = ""
     if len(st.session_state.chat_history) == 0:
         chat_md += "**La chat è vuota. Fai una domanda per iniziare.**\n"
@@ -186,7 +187,8 @@ with st.expander("💬 Chat con AI", expanded=True):
             else:
                 chat_md += f"**Gemini:**\n\n{chat['content']}\n\n"
 
-    # Wrappare tutto in div con classe personalizzata che gestisce lo scroll
-    st.markdown(f'<div class="chat-markdown">{st.markdown(chat_md)}</div>', unsafe_allow_html=True)
+    # ✅ Converti Markdown in HTML sicuro
+    chat_html_converted = markdown.markdown(chat_md)
 
-
+    # ✅ Inserisci solo HTML convertito in un div scrollabile
+    st.markdown(f'<div class="chat-markdown">{chat_html_converted}</div>', unsafe_allow_html=True)
